@@ -121,6 +121,9 @@
         class="time-wrapper"
       >
         <div *ngIf="!task?.subTasks?.length" class="time">
+          <span [innerHTML]="task?.timeSpentOnDay[day]|msToString"></span>
+          <span>&nbsp;{{T.PDS.TODAY|translate}}</span>
+          <div class="separator">/</div>
           <div class="time-val">
             <span [innerHTML]="task?.timeSpent|msToString"></span>
           </div>

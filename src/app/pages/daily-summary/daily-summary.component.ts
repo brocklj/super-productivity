@@ -207,9 +207,13 @@ export class DailySummaryComponent implements OnInit, OnDestroy {
 
   async finishDay() {
     const doneTasks = await this.workContextService.doneTasks$.pipe(take(1)).toPromise();
+    const todaysTasks = await this.workContextService.todaysTasks$
+      .pipe(take(1))
+      .toPromise();
 
     this._taskService.moveToArchive(doneTasks);
 
+    await this._taskService.sendTimeSpendToGitlab(todaysTasks);
     if (IS_ELECTRON && this.isForToday) {
       this._matDialog
         .open(DialogConfirmComponent, {

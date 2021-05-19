@@ -158,7 +158,7 @@ export class CaldavIssueEffects {
     issuesToAdd: CaldavIssueReduced[],
   ) {
     issuesToAdd.forEach((issue) => {
-      this._issueService.addTaskWithIssue(CALDAV_TYPE, issue, projectId, true);
+      this._issueService.addTaskWithIssue(CALDAV_TYPE, issue, '', projectId, true);
     });
 
     if (issuesToAdd.length === 1) {

@@ -8,10 +8,10 @@ import {
 import { GITHUB_INITIAL_POLL_DELAY } from '../github/github.const';
 
 export const DEFAULT_GITLAB_CFG: GitlabCfg = {
-  project: null,
-  gitlabBaseUrl: null,
+  project: 'groups/prins_software',
+  gitlabBaseUrl: 'http://gitlab.prins.cz',
   token: null,
-  isSearchIssuesFromGitlab: false,
+  isSearchIssuesFromGitlab: true,
   isAutoPoll: false,
   isAutoAddToBacklog: false,
   filterUsername: null,
@@ -33,6 +33,7 @@ export const GITLAB_CONFIG_FORM: LimitedFormlyFieldConfig<GitlabCfg>[] = [
   {
     key: 'gitlabBaseUrl',
     type: 'input',
+    defaultValue: 'http://gitlab.prins.cz',
     templateOptions: {
       label: T.F.GITLAB.FORM.GITLAB_BASE_URL,
       type: 'text',
@@ -42,6 +43,7 @@ export const GITLAB_CONFIG_FORM: LimitedFormlyFieldConfig<GitlabCfg>[] = [
   {
     key: 'project',
     type: 'input',
+    defaultValue: 'groups/prins-software',
     templateOptions: {
       label: T.F.GITLAB.FORM.PROJECT,
       type: 'text',

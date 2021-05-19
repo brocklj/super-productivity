@@ -41,9 +41,11 @@ export class GitlabCommonInterfacesService implements IssueServiceInterface {
     );
   }
 
-  getById$(issueId: number, projectId: string) {
+  getById$(issueId: number | string, issueDataProjectId: any, projectId: string) {
     return this._getCfgOnce$(projectId).pipe(
-      concatMap((gitlabCfg) => this._gitlabApiService.getById$(issueId, gitlabCfg)),
+      concatMap((gitlabCfg) =>
+        this._gitlabApiService.getById$(issueId, issueDataProjectId, gitlabCfg),
+      ),
     );
   }
 
@@ -72,7 +74,9 @@ export class GitlabCommonInterfacesService implements IssueServiceInterface {
     }
 
     const cfg = await this._getCfgOnce$(task.projectId).toPromise();
-    const issue = await this._gitlabApiService.getById$(+task.issueId, cfg).toPromise();
+    const issue = await this._gitlabApiService
+      .getById$(+task.issueId, task.issueProjectId, cfg)
+      .toPromise();
 
     const issueUpdate: number = new Date(issue.updated_at).getTime();
     const commentsByOthers =
@@ -135,7 +139,7 @@ export class GitlabCommonInterfacesService implements IssueServiceInterface {
 
     const cfg = await this._getCfgOnce$(projectId).toPromise();
     const issues: GitlabIssue[] = [];
-    const paramsCount = 59; // Can't send more than 59 issue id For some reason it returns 502 bad gateway
+    const paramsCount = 30; // Can't send more than 59 issue id For some reason it returns 502 bad gateway
     let ids;
     let i = 0;
     while (i < tasks.length) {

@@ -261,7 +261,6 @@ export class AddTaskBarComponent implements AfterViewInit, OnDestroy {
   async addTask() {
     this._isAddInProgress = true;
     const item: AddTaskSuggestion | string = this.taskSuggestionsCtrl.value;
-
     if (!item) {
       return;
     } else if (typeof item === 'string') {
@@ -321,6 +320,7 @@ export class AddTaskBarComponent implements AfterViewInit, OnDestroy {
         this._lastAddedTaskId = await this._issueService.addTaskWithIssue(
           item.issueType,
           item.issueData.id,
+          item.issueData.project_id,
           this._workContextService.activeWorkContextId as string,
           this.isAddToBacklog,
         );

@@ -165,7 +165,12 @@ export class TaskAdditionalInfoComponent implements AfterViewInit, OnDestroy {
           throw new Error('task data not ready');
         }
         return this._issueService
-          .getById$(args.type, args.id, this._taskData.projectId)
+          .getById$(
+            args.type,
+            args.id,
+            this._taskData.issueProjectId,
+            this._taskData.projectId,
+          )
           .pipe(
             // NOTE we need this, otherwise the error is going to weird up the observable
             catchError(() => {

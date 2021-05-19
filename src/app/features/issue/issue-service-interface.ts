@@ -6,7 +6,11 @@ import { TaskAttachment } from '../tasks/task-attachment/task-attachment.model';
 export interface IssueServiceInterface {
   issueLink$(issueId: string | number, projectId: string): Observable<string>;
 
-  getById$(id: string | number, projectId: string): Observable<IssueData>;
+  getById$(
+    id: string | number,
+    issueDataProjectId: string,
+    projectId: string,
+  ): Observable<IssueData>;
 
   getAddTaskData(
     issueData: IssueDataReduced,

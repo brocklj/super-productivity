@@ -47,6 +47,7 @@ export type TimeSpentOnDay = Readonly<TimeSpentOnDayCopy>;
 export interface IssueFieldsForTask {
   // NOTE: keep in mind that the issueId is not unique (especially for github)
   issueId: string | null;
+  issueProjectId: string | null;
   issueType: IssueProviderKey | null;
   issueWasUpdated: boolean | null;
   issueLastUpdated: number | null;
@@ -65,6 +66,7 @@ export interface TaskCopy extends IssueFieldsForTask {
   timeEstimate: number;
 
   created: number;
+  timeToday: number;
   isDone: boolean;
   doneOn: number | null;
   plannedAt: number | null;
@@ -125,6 +127,7 @@ export const DEFAULT_TASK: Task = {
   timeSpentOnDay: {},
   timeSpent: 0,
   timeEstimate: 0,
+  timeToday: 0,
   isDone: false,
   doneOn: null,
   title: '',
@@ -141,6 +144,7 @@ export const DEFAULT_TASK: Task = {
   attachments: [],
 
   issueId: null,
+  issueProjectId: null,
   issuePoints: null,
   issueType: null,
   issueAttachmentNr: null,

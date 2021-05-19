@@ -494,7 +494,13 @@ export class JiraIssueEffects {
         );
 
         issuesToAdd.forEach((issue) => {
-          this._issueService.addTaskWithIssue(JIRA_TYPE, issue, projectId, true);
+          this._issueService.addTaskWithIssue(
+            JIRA_TYPE,
+            issue,
+            'todo - JiraIssueEffects:58',
+            projectId,
+            true,
+          );
         });
 
         if (issuesToAdd.length === 1) {

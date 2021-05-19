@@ -100,6 +100,7 @@ import { SnackService } from '../../core/snack/snack.service';
 import { T } from '../../t.const';
 import { ImexMetaService } from '../../imex/imex-meta/imex-meta.service';
 import { remindOptionToMilliseconds } from './util/remind-option-to-milliseconds';
+import { GitlabApiService } from '../issue/providers/gitlab/gitlab-api/gitlab-api.service';
 
 @Injectable({
   providedIn: 'root',
@@ -179,6 +180,7 @@ export class TaskService {
     private readonly _snackService: SnackService,
     private readonly _timeTrackingService: TimeTrackingService,
     private readonly _router: Router,
+    private readonly _gitlabApiService: GitlabApiService,
   ) {
     this.currentTaskId$.subscribe((val) => (this.currentTaskId = val));
 
@@ -426,6 +428,12 @@ export class TaskService {
 
   addTimeSpent(task: Task, duration: number, date: string = getWorklogStr()) {
     this._store.dispatch(new AddTimeSpent({ task, date, duration }));
+  }
+
+  async sendTimeSpendToGitlab(tasks: Task[]) {
+    for (const task of tasks) {
+      await this._gitlabApiService.recordTimeSpend(task);
+    }
   }
 
   removeTimeSpent(id: string, duration: number, date: string = getWorklogStr()) {

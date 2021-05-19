@@ -44,6 +44,7 @@ import { DialogEditTagsForTaskComponent } from '../../tag/dialog-edit-tags/dialo
 import { WorkContextService } from '../../work-context/work-context.service';
 import { environment } from '../../../../environments/environment';
 import { throttle } from 'helpful-decorators';
+import { getTodayStr } from '../util/get-today-str';
 
 @Component({
   selector: 'task',
@@ -66,6 +67,7 @@ export class TaskComponent implements OnInit, OnDestroy, AfterViewInit {
   ShowSubTasksMode: typeof ShowSubTasksMode = ShowSubTasksMode;
   contextMenuPosition: { x: string; y: string } = { x: '0px', y: '0px' };
   progress: number = 0;
+  @Input() day: string = getTodayStr();
   isDev: boolean = !(environment.production || environment.stage);
   @ViewChild('contentEditableOnClickEl', { static: true })
   contentEditableOnClickEl?: ElementRef;
@@ -109,12 +111,12 @@ export class TaskComponent implements OnInit, OnDestroy, AfterViewInit {
 
   projectColor$: Observable<string> = this.showParentTitle
     ? this._task$.pipe(
-      take(1),
-      switchMap((task) => task.projectId
-        ? this._projectService.getByIdOnce$(task.projectId)
-        : EMPTY),
-      map(project => project.theme.primary),
-    )
+        take(1),
+        switchMap((task) =>
+          task.projectId ? this._projectService.getByIdOnce$(task.projectId) : EMPTY,
+        ),
+        map((project) => project.theme.primary),
+      )
     : EMPTY;
 
   private _dragEnterTarget?: HTMLElement;

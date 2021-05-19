@@ -33,7 +33,7 @@ export interface IssueIntegrationCfgs {
   CALDAV?: CaldavCfg;
 }
 
-export type IssueData = JiraIssue | GithubIssue | GitlabIssue | CaldavIssue;
+export type IssueData = JiraIssue | GithubIssue | GitlabIssue | CaldavIssue | any;
 export type IssueDataReduced =
   | GithubIssueReduced
   | JiraIssueReduced

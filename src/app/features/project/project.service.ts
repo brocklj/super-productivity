@@ -27,7 +27,8 @@ import { SnackService } from '../../core/snack/snack.service';
 import { T } from '../../t.const';
 import { BreakNr, BreakTime, WorkContextType } from '../work-context/work-context.model';
 import { WorkContextService } from '../work-context/work-context.service';
-import { GITHUB_TYPE, GITLAB_TYPE, JIRA_TYPE } from '../issue/issue.const';
+//import { GITHUB_TYPE, GITLAB_TYPE, JIRA_TYPE } from '../issue/issue.const';
+import { GITLAB_TYPE } from '../issue/issue.const';
 import { GitlabCfg } from '../issue/providers/gitlab/gitlab';
 import { ExportedProject } from './project-archive.model';
 import { CaldavCfg } from '../issue/providers/caldav/caldav.model';
@@ -109,11 +110,12 @@ export class ProjectService {
     projectId: string,
     issueProviderKey: IssueProviderKey,
   ): Observable<IssueIntegrationCfg> {
-    if (issueProviderKey === GITHUB_TYPE) {
-      return this.getGithubCfgForProject$(projectId);
+    if (issueProviderKey === GITLAB_TYPE) {
+      /*if (issueProviderKey === GITHUB_TYPE) {
+      //return this.getGithubCfgForProject$(projectId);
     } else if (issueProviderKey === JIRA_TYPE) {
-      return this.getJiraCfgForProject$(projectId);
-    } else if (issueProviderKey === GITLAB_TYPE) {
+      //return this.getJiraCfgForProject$(projectId);
+    } else if (issueProviderKey === GITLAB_TYPE) {*/
       return this.getGitlabCfgForProject$(projectId);
     } else {
       throw new Error('Invalid IssueProviderKey');

@@ -14,19 +14,50 @@ import { GitlabOriginalComment, GitlabOriginalIssue } from './gitlab-api-respons
 import { HANDLED_ERROR_PROP_STR } from 'src/app/app.constants';
 import { GITLAB_API_BASE_URL, GITLAB_PROJECT_REGEX } from '../gitlab.const';
 import { T } from 'src/app/t.const';
-import { catchError, filter, map, mergeMap, take } from 'rxjs/operators';
+import { catchError, filter, first, map, mergeMap, take } from 'rxjs/operators';
 import { GitlabIssue } from '../gitlab-issue/gitlab-issue.model';
 import {
   mapGitlabIssue,
   mapGitlabIssueToSearchResult,
 } from '../gitlab-issue/gitlab-issue-map.util';
 import { SearchResultItem } from '../../../issue.model';
-
+import { Task } from 'src/app/features/tasks/task.model';
+import { ProjectService } from 'src/app/features/project/project.service';
+import { getTodayStr } from '../../../../../features/tasks/util/get-today-str';
 @Injectable({
   providedIn: 'root',
 })
 export class GitlabApiService {
-  constructor(private _snackService: SnackService, private _http: HttpClient) {}
+  constructor(
+    private _snackService: SnackService,
+    private _http: HttpClient,
+    private _projectService: ProjectService,
+  ) {}
+
+  async recordTimeSpend(task: Task) {
+    const projectId: string = task.projectId || '';
+    const cfg: GitlabCfg = await this._projectService
+      .getGitlabCfgForProject$(projectId)
+      .pipe(first())
+      .toPromise();
+    await fetch(
+      `${this.apiLink(cfg)}projects/${task.issueProjectId}/issues/${
+        task.issueId
+      }/add_spent_time?duration=${
+        parseFloat(Math.round(task.timeSpentOnDay[getTodayStr()] / 36000).toString()) /
+        100
+      }h`,
+      {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          ...(cfg.token ? { Authorization: 'Bearer ' + cfg.token } : {}),
+        },
+      },
+    );
+
+    return task;
+  }
 
   getProjectData$(cfg: GitlabCfg): Observable<GitlabIssue[]> {
     if (!this._isValidSettings(cfg)) {
@@ -45,10 +76,14 @@ export class GitlabApiService {
     );
   }
 
-  getById$(id: number, cfg: GitlabCfg): Observable<GitlabIssue> {
+  getById$(
+    id: number | string,
+    issueDataProjectId: any,
+    cfg: GitlabCfg,
+  ): Observable<GitlabIssue> {
     return this._sendRequest$(
       {
-        url: `${this.apiLink(cfg)}/issues/${id}`,
+        url: `${this.apiLink(cfg)}projects/${issueDataProjectId}/issues/${id}`,
       },
       cfg,
     ).pipe(
@@ -69,7 +104,8 @@ export class GitlabApiService {
     }
     return this._sendRequest$(
       {
-        url: `${this.apiLink(cfg)}/issues?${queryParams}&per_page=100`,
+        //per_page=100 - default
+        url: `${this.apiLink(cfg)}issues?scope=all&${queryParams}&per_page=30`,
       },
       cfg,
     ).pipe(
@@ -89,7 +125,7 @@ export class GitlabApiService {
   }
 
   getIssueWithComments$(issue: GitlabIssue, cfg: GitlabCfg): Observable<GitlabIssue> {
-    return this._getIssueComments$(issue.id, 1, cfg).pipe(
+    return this._getIssueComments$(issue.id, issue.project_id, 1, cfg).pipe(
       map((comments) => {
         return {
           ...issue,
@@ -109,7 +145,9 @@ export class GitlabApiService {
     }
     return this._sendRequest$(
       {
-        url: `${this.apiLink(cfg)}/issues?search=${searchText}&order_by=updated_at`,
+        url: `${this.apiLink(
+          cfg,
+        )}issues?scope=all&search=${searchText}&order_by=updated_at`,
       },
       cfg,
     ).pipe(
@@ -139,7 +177,8 @@ export class GitlabApiService {
       {
         url: `${this.apiLink(
           cfg,
-        )}/issues?state=opened&order_by=updated_at&per_page=100&page=${pageNumber}`,
+          //per_page=100 - default
+        )}issues?scope=all&order_by=updated_at&per_page=30&page=${pageNumber}`,
       },
       cfg,
     ).pipe(
@@ -150,15 +189,21 @@ export class GitlabApiService {
     );
   }
 
-  private _getIssueComments$(issueid: number, pageNumber: number, cfg: GitlabCfg) {
-    if (!this._isValidSettings(cfg)) {
+  private _getIssueComments$(
+    issueid: number,
+    projectId: number,
+    pageNumber: number,
+    cfg: GitlabCfg,
+  ) {
+    if (!this._isValidSettings(cfg) || !issueid || !projectId) {
       return EMPTY;
     }
     return this._sendRequest$(
       {
         url: `${this.apiLink(
           cfg,
-        )}/issues/${issueid}/notes?per_page=100&page=${pageNumber}`,
+          //per_page=100 - default
+        )}projects/${projectId}/issues/${issueid}/notes?per_page=30&page=${pageNumber}`,
       },
       cfg,
     ).pipe(
@@ -184,7 +229,6 @@ export class GitlabApiService {
     cfg: GitlabCfg,
   ): Observable<any> {
     this._isValidSettings(cfg);
-
     const p: HttpRequest<any> | any = {
       ...params,
       method: params.method || 'GET',
@@ -207,6 +251,7 @@ export class GitlabApiService {
       },
     ];
     const req = new HttpRequest(p.method, p.url, ...allArgs);
+    //debugger;
     return this._http.request(req).pipe(
       // TODO remove type: 0 @see https://brianflove.com/2018/09/03/angular-http-client-observe-response/
       filter((res) => !(res === Object(res) && res.type === 0)),
@@ -250,7 +295,7 @@ export class GitlabApiService {
       const fixedUrl = projectConfig.gitlabBaseUrl.match(/.*\/$/)
         ? projectConfig.gitlabBaseUrl
         : `${projectConfig.gitlabBaseUrl}/`;
-      apiURL = fixedUrl + 'api/v4/projects/';
+      apiURL = fixedUrl + 'api/v4/';
     } else {
       apiURL = GITLAB_API_BASE_URL + '/';
     }
@@ -261,7 +306,7 @@ export class GitlabApiService {
       // Should never enter here
       throwError('Gitlab Project URL');
     }
-    apiURL += projectURL;
+    //apiURL += projectURL;
     return apiURL;
   }
 }

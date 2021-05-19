@@ -28,6 +28,7 @@ export const mapGitlabIssue = (issue: GitlabOriginalIssue): GitlabIssue => {
     url: issue.web_url,
     // NOTE: we use the issue number as id as well, as it there is not much to be done with the id with the api
     id: issue.iid,
+    project_id: issue.project_id,
   };
 };
 

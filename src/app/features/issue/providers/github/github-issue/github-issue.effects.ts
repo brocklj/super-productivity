@@ -129,7 +129,13 @@ export class GithubIssueEffects {
     issuesToAdd: GithubIssueReduced[],
   ) {
     issuesToAdd.forEach((issue) => {
-      this._issueService.addTaskWithIssue(GITHUB_TYPE, issue, projectId, true);
+      this._issueService.addTaskWithIssue(
+        GITHUB_TYPE,
+        issue,
+        'TODO - GithubIssueEffects:132',
+        projectId,
+        true,
+      );
     });
 
     if (issuesToAdd.length === 1) {

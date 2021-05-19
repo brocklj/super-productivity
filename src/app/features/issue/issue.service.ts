@@ -47,6 +47,7 @@ export class IssueService {
   getById$(
     issueType: IssueProviderKey,
     id: string | number,
+    issueProjectId: any,
     projectId: string,
   ): Observable<IssueData> {
     // account for issue refreshment
@@ -55,14 +56,18 @@ export class IssueService {
         this.ISSUE_REFRESH_MAP[issueType][id] = new Subject<IssueData>();
       }
       return this.ISSUE_SERVICE_MAP[issueType]
-        .getById$(id, projectId)
+        .getById$(id, issueProjectId, projectId)
         .pipe(
           switchMap((issue) =>
             merge<IssueData>(of(issue), this.ISSUE_REFRESH_MAP[issueType][id]),
           ),
         );
     } else {
-      return this.ISSUE_SERVICE_MAP[issueType].getById$(id, projectId);
+      return this.ISSUE_SERVICE_MAP[issueType].getById$(
+        id,
+        'todo - IssueService:68',
+        projectId,
+      );
     }
   }
 
@@ -173,23 +178,31 @@ export class IssueService {
 
   async addTaskWithIssue(
     issueType: IssueProviderKey,
-    issueIdOrData: string | number | IssueDataReduced,
+    issueIdOrData: string | number | IssueDataReduced | any,
+    issueDataProjectId: any,
     projectId: string,
     isAddToBacklog: boolean = false,
   ): Promise<string> {
     if (!this.ISSUE_SERVICE_MAP[issueType].getAddTaskData) {
       throw new Error('Issue method not available');
     }
-    const { issueId, issueData } =
+
+    const { issueId, issueProjectId, issueData } =
       typeof issueIdOrData === 'number' || typeof issueIdOrData === 'string'
         ? {
             issueId: issueIdOrData,
+            issueProjectId: (
+              await this._gitlabCommonInterfacesService
+                .getById$(issueIdOrData, issueDataProjectId, projectId)
+                .toPromise()
+            ).project_id,
             issueData: await this.ISSUE_SERVICE_MAP[issueType]
-              .getById$(issueIdOrData, projectId)
+              .getById$(issueIdOrData, issueDataProjectId, projectId)
               .toPromise(),
           }
         : {
             issueId: issueIdOrData.id,
+            issueProjectId: issueIdOrData.project_id,
             issueData: issueIdOrData,
           };
 
@@ -200,6 +213,7 @@ export class IssueService {
     return this._taskService.add(title, isAddToBacklog, {
       issueType,
       issueId: issueId as string,
+      issueProjectId: issueProjectId.toString() as string,
       issueWasUpdated: false,
       issueLastUpdated: Date.now(),
       ...additionalFields,

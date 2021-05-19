@@ -1130,7 +1130,7 @@
     "ROUND_UP_15M": "Round UP all tasks to 15 minutes",
     "ROUND_UP_30M": "Round UP all tasks to 30 minutes",
     "ROUND_UP_5M": "Round UP all tasks to 5 minutes",
-    "SAVE_AND_GO_HOME": "Save and go home",
+    "SAVE_AND_GO_HOME": "Save time to Gitlab and go home",
     "START_END": "Start – End",
     "SUMMARY_FOR": "Daily Summary for {{dayStr}}",
     "TASKS_COMPLETED": "Tasks Completed",

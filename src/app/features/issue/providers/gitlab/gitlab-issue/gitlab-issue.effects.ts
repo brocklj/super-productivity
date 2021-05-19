@@ -105,7 +105,13 @@ export class GitlabIssueEffects {
     );
 
     issuesToAdd.forEach((issue) => {
-      this._issueService.addTaskWithIssue(GITLAB_TYPE, issue, projectId, true);
+      this._issueService.addTaskWithIssue(
+        GITLAB_TYPE,
+        issue,
+        issue.project_id,
+        projectId,
+        true,
+      );
     });
 
     if (issuesToAdd.length === 1) {
