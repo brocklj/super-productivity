@@ -41,20 +41,22 @@ export class GitlabApiService {
       .toPromise();
 
     for (const day in task.timeSpentOnDay) {
-      await fetch(
-        `${this.apiLink(cfg)}projects/${task.issueProjectId}/issues/${
-          task.issueId
-        }/add_spent_time?duration=${
-          parseFloat(Math.round(task.timeSpentOnDay[day] / 36000).toString()) / 100
-        }h`,
-        {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            ...(cfg.token ? { ['PRIVATE-TOKEN']: cfg.token } : {}),
+      if (day) {
+        await fetch(
+          `${this.apiLink(cfg)}projects/${task.issueProjectId}/issues/${
+            task.issueId
+          }/add_spent_time?duration=${
+            parseFloat(Math.round(task.timeSpentOnDay[day] / 36000).toString()) / 100
+          }h`,
+          {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+              ...(cfg.token ? { ['PRIVATE-TOKEN']: cfg.token } : {}),
+            },
           },
-        },
-      );
+        );
+      }
     }
 
     return task;

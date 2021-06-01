@@ -441,7 +441,9 @@ export class TaskService {
         if (project.issueIntegrationCfgs.GITLAB?.token != null) {
           await this._gitlabApiService.recordTimeSpend(task);
           for (const day in task.timeSpentOnDay) {
-            this.removeTimeSpent(task.id, task.timeSpentOnDay[day], day);
+            if (day) {
+              this.removeTimeSpent(task.id, task.timeSpentOnDay[day], day);
+            }
           }
         }
       }
