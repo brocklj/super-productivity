@@ -77,7 +77,7 @@ import {
   selectTaskWithSubTasksByRepeatConfigId,
 } from './store/task.selectors';
 import { getWorklogStr } from '../../util/get-work-log-str';
-import { RoundTimeOption } from '../project/project.model';
+import { ProjectCopy, RoundTimeOption } from '../project/project.model';
 import { TagService } from '../tag/tag.service';
 import { TODAY_TAG } from '../tag/tag.const';
 import { WorkContextService } from '../work-context/work-context.service';
@@ -101,6 +101,7 @@ import { T } from '../../t.const';
 import { ImexMetaService } from '../../imex/imex-meta/imex-meta.service';
 import { remindOptionToMilliseconds } from './util/remind-option-to-milliseconds';
 import { GitlabApiService } from '../issue/providers/gitlab/gitlab-api/gitlab-api.service';
+import { ProjectService } from '../project/project.service';
 
 @Injectable({
   providedIn: 'root',
@@ -181,6 +182,7 @@ export class TaskService {
     private readonly _timeTrackingService: TimeTrackingService,
     private readonly _router: Router,
     private readonly _gitlabApiService: GitlabApiService,
+    private readonly _projectService: ProjectService,
   ) {
     this.currentTaskId$.subscribe((val) => (this.currentTaskId = val));
 
@@ -432,7 +434,17 @@ export class TaskService {
 
   async sendTimeSpendToGitlab(tasks: Task[]) {
     for (const task of tasks) {
-      await this._gitlabApiService.recordTimeSpend(task);
+      if (task.projectId) {
+        const project: ProjectCopy = await this._projectService
+          .getByIdOnce$(task.projectId)
+          .toPromise();
+        if (project.issueIntegrationCfgs.GITLAB?.token != null) {
+          await this._gitlabApiService.recordTimeSpend(task);
+          for (const day in task.timeSpentOnDay) {
+            this.removeTimeSpent(task.id, task.timeSpentOnDay[day], day);
+          }
+        }
+      }
     }
   }
 

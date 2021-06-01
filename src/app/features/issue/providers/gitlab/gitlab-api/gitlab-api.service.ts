@@ -23,7 +23,6 @@ import {
 import { SearchResultItem } from '../../../issue.model';
 import { Task } from 'src/app/features/tasks/task.model';
 import { ProjectService } from 'src/app/features/project/project.service';
-import { getTodayStr } from '../../../../../features/tasks/util/get-today-str';
 @Injectable({
   providedIn: 'root',
 })
@@ -40,21 +39,23 @@ export class GitlabApiService {
       .getGitlabCfgForProject$(projectId)
       .pipe(first())
       .toPromise();
-    await fetch(
-      `${this.apiLink(cfg)}projects/${task.issueProjectId}/issues/${
-        task.issueId
-      }/add_spent_time?duration=${
-        parseFloat(Math.round(task.timeSpentOnDay[getTodayStr()] / 36000).toString()) /
-        100
-      }h`,
-      {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          ...(cfg.token ? { Authorization: 'Bearer ' + cfg.token } : {}),
+
+    for (const day in task.timeSpentOnDay) {
+      await fetch(
+        `${this.apiLink(cfg)}projects/${task.issueProjectId}/issues/${
+          task.issueId
+        }/add_spent_time?duration=${
+          parseFloat(Math.round(task.timeSpentOnDay[day] / 36000).toString()) / 100
+        }h`,
+        {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            ...(cfg.token ? { ['PRIVATE-TOKEN']: cfg.token } : {}),
+          },
         },
-      },
-    );
+      );
+    }
 
     return task;
   }
@@ -147,7 +148,7 @@ export class GitlabApiService {
       {
         url: `${this.apiLink(
           cfg,
-        )}issues?scope=all&search=${searchText}&order_by=updated_at`,
+        )}issues?scope=all&search=${searchText}&order_by=updated_at&state=opened`,
       },
       cfg,
     ).pipe(
